@@ -1,0 +1,111 @@
+<!-- Twitter-style Timeline -->
+<div class="timeline-container">
+  <% if (page.posts.length > 0) { %>
+    <div class="timeline-header">
+      <h2 class="timeline-title">Latest Posts</h2>
+      <p class="timeline-subtitle"><%= page.posts.length %> posts</p>
+    </div>
+    
+    <div class="timeline-feed">
+      <% page.posts.each(function(post) { %>
+        <article class="tweet-card">
+          <!-- User Avatar and Info -->
+          <div class="tweet-avatar">
+            <img src="<%= theme.profile.avatar %>" alt="<%= theme.profile.username %>" class="avatar-img">
+          </div>
+          
+          <!-- Tweet Content -->
+          <div class="tweet-content">
+            <!-- Header -->
+            <div class="tweet-header">
+              <div class="tweet-user-info">
+                <span class="tweet-display-name"><%= theme.profile.display_name %></span>
+                <span class="tweet-username">@<%= theme.profile.username %></span>
+                <span class="tweet-separator">·</span>
+                <time class="tweet-time" datetime="<%= post.date.format() %>">
+                  <%= date(post.date, 'MMM DD') %>
+                </time>
+              </div>
+              <div class="tweet-menu">
+                <button class="tweet-menu-btn" aria-label="More options">
+                  <i data-lucide="more-horizontal" class="tweet-menu-icon"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Tweet Text -->
+            <div class="tweet-text">
+              <h3 class="tweet-title">
+                <a href="<%- url_for(post.path) %>"><%= post.title %></a>
+              </h3>
+              <p class="tweet-excerpt">
+                <%- truncate(strip_html(post.content), {length: theme.misc.excerpt_length}) %>
+              </p>
+              
+              <!-- Tags as hashtags -->
+              <% if (post.tags && post.tags.length > 0) { %>
+                <div class="tweet-hashtags">
+                  <% post.tags.each(function(tag) { %>
+                    <span class="hashtag">#<%= tag.name %></span>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+            
+            <!-- Tweet Actions -->
+            <% if (theme.features.twitter_actions) { %>
+            <div class="tweet-actions">
+              <button class="tweet-action reply-action" aria-label="Reply">
+                <i data-lucide="message-circle" class="action-icon"></i>
+                <span class="action-count">0</span>
+              </button>
+              
+              <% if (theme.features.retweet_button) { %>
+              <button class="tweet-action retweet-action" aria-label="Retweet">
+                <i data-lucide="repeat2" class="action-icon"></i>
+                <span class="action-count">0</span>
+              </button>
+              <% } %>
+              
+              <% if (theme.features.like_button) { %>
+              <button class="tweet-action like-action" aria-label="Like">
+                <i data-lucide="heart" class="action-icon"></i>
+                <span class="action-count">0</span>
+              </button>
+              <% } %>
+              
+              <% if (theme.features.share_button) { %>
+              <button class="tweet-action share-action" aria-label="Share">
+                <i data-lucide="share" class="action-icon"></i>
+              </button>
+              <% } %>
+              
+              <a href="<%- url_for(post.path) %>" class="tweet-action read-action" aria-label="Read full post">
+                <i data-lucide="external-link" class="action-icon"></i>
+                <span class="action-text">Read</span>
+              </a>
+            </div>
+            <% } %>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <div class="timeline-empty">
+      <div class="empty-state-twitter">
+        <i data-lucide="file-text" class="empty-icon"></i>
+        <h2>No posts yet</h2>
+        <p>When posts are published, they'll show up here.</p>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<% if (page.total > 1) { %>
+  <nav class="pagination">
+    <%- paginator({
+      prev_text: '← Previous',
+      next_text: 'Next →'
+    }) %>
+  </nav>
+<% } %>

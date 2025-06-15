@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="<%= config.language || 'en' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><% if (page.title) { %><%= page.title %> | <% } %><%= config.title %></title>
+  <meta name="theme-color" content="#09090b">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=VT323:wght@400&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="<%- url_for('css/style.css') %>">
+</head>
+<body style="background-color: #09090b; min-height: 100dvh;" class="<%= page.path === 'index.html' || page.path === '' ? 'home-page' : '' %><% if (theme.features.smooth_scroll) { %> smooth-scroll<% } %><% if (theme.features.page_transitions) { %> page-transitions<% } %><% if (theme.features.cursor_effects) { %> cursor-effects<% } %><% if (theme.features.background_effects) { %> background-effects<% } %>">
+  <!-- Background Effects -->
+  <% if (theme.features.background_effects) { %>
+  <div id="bg-ball"></div>
+  <% } %>
+  <% if (theme.features.cursor_effects) { %>
+  <div id="trailing-cursor"></div>
+  <% } %>
+
+  <header class="doeshing-header">
+    <div class="header-container">
+      <!-- Logo/Brand -->
+      <a href="<%- url_for('/') %>" class="brand-link">
+        <span class="brand-text">&gt; <%= config.title %></span>
+        <span class="cursor-blink">▌</span>
+      </a>
+
+      <!-- Search Bar -->
+      <div class="header-search">
+        <div class="search-container">
+          <input type="text" id="header-search" class="search-input" placeholder="搜尋文章..." autocomplete="off">
+          <i data-lucide="search" class="search-icon"></i>
+          <div id="search-results" class="search-results"></div>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav">
+        <a href="https://blog.doeshing.site" target="_blank" rel="noopener noreferrer" class="nav-button">
+          <i data-lucide="receipt-text" class="nav-icon"></i>
+          部落格
+        </a>
+        <a href="<%- url_for('/categories/專案/') %>" class="nav-button <%= page.path.includes('categories/專案') ? 'active' : '' %>">
+          <i data-lucide="code" class="nav-icon"></i>
+          專案
+        </a>
+        <a href="<%- url_for('/about/') %>" class="nav-button <%= page.path.startsWith('about/') ? 'active' : '' %>">
+          <i data-lucide="signature" class="nav-icon"></i>
+          關於
+        </a>
+      </nav>
+
+      <!-- Mobile Menu Toggle -->
+      <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
+        <i data-lucide="menu" class="menu-icon"></i>
+      </button>
+
+      <!-- Mobile Menu -->
+      <div class="mobile-menu">
+        <div class="mobile-menu-content">
+          <a href="https://blog.doeshing.site" target="_blank" rel="noopener noreferrer" class="mobile-nav-item">
+            <i data-lucide="receipt-text" class="nav-icon"></i>
+            部落格
+          </a>
+          <a href="<%- url_for('/categories/專案/') %>" class="mobile-nav-item <%= page.path.includes('categories/專案') ? 'active' : '' %>">
+            <i data-lucide="code" class="nav-icon"></i>
+            專案
+          </a>
+          <a href="<%- url_for('/about/') %>" class="mobile-nav-item <%= page.path.startsWith('about/') ? 'active' : '' %>">
+            <i data-lucide="signature" class="nav-icon"></i>
+            關於
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-container">
+    <!-- Left Sidebar (Categories) -->
+    <aside class="left-sidebar">
+      <div class="sidebar-content">
+        <nav class="category-nav">
+          <h3 class="sidebar-title">Categories</h3>
+          <ul class="category-list">
+            <li class="category-item">
+              <a href="<%- url_for('/') %>" class="category-link active">
+                <i data-lucide="home" class="category-icon"></i>
+                <span class="category-text">Home</span>
+              </a>
+            </li>
+            <li class="category-item">
+              <a href="<%- url_for('/archives/') %>" class="category-link">
+                <i data-lucide="archive" class="category-icon"></i>
+                <span class="category-text">All Posts</span>
+              </a>
+            </li>
+            <% site.categories.each(function(category) { %>
+              <li class="category-item">
+                <a href="<%- url_for(category.path) %>" class="category-link">
+                  <i data-lucide="folder" class="category-icon"></i>
+                  <span class="category-text"><%= category.name %></span>
+                  <span class="category-count"><%= category.posts.length %></span>
+                </a>
+              </li>
+            <% }) %>
+          </ul>
+        </nav>
+        
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <%- body %>
+    </main>
+
+    <!-- Right Sidebar (Widgets) -->
+    <aside class="right-sidebar">
+      <div class="sidebar-content">
+        
+        <!-- Profile Widget -->
+        <% if (theme.widgets.profile.enable) { %>
+        <div class="widget profile-widget">
+          <div class="widget-header">
+            <h3 class="widget-title">About Me</h3>
+          </div>
+          <div class="widget-content">
+            <div class="profile-info">
+              <% if (theme.widgets.profile.show_avatar) { %>
+              <img src="<%= theme.profile.avatar %>" alt="<%= theme.profile.username %>" class="profile-avatar">
+              <% } %>
+              <div class="profile-details">
+                <h4 class="profile-name"><%= theme.profile.display_name %></h4>
+                <p class="profile-handle">@<%= theme.profile.username %></p>
+                <p class="profile-bio"><%= theme.profile.bio %></p>
+              </div>
+            </div>
+            <% if (theme.widgets.profile.show_stats) { %>
+            <div class="profile-stats">
+              <div class="stat-item">
+                <span class="stat-number"><%= site.posts.length %></span>
+                <span class="stat-label">Posts</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number"><%= site.categories.length %></span>
+                <span class="stat-label">Categories</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number"><%= site.tags.length %></span>
+                <span class="stat-label">Tags</span>
+              </div>
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Popular Tags Widget -->
+        <% if (theme.widgets.tags.enable) { %>
+        <div class="widget tags-widget">
+          <div class="widget-header">
+            <h3 class="widget-title"><%= theme.widgets.tags.title %></h3>
+          </div>
+          <div class="widget-content">
+            <div class="tag-cloud">
+              <% site.tags.sort('length', -1).limit(theme.widgets.tags.limit).each(function(tag) { %>
+                <a href="<%- url_for(tag.path) %>" class="tag-item">
+                  #<%= tag.name %>
+                  <span class="tag-count"><%= tag.posts.length %></span>
+                </a>
+              <% }) %>
+            </div>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Recent Posts Widget -->
+        <% if (theme.widgets.recent_posts.enable) { %>
+        <div class="widget recent-posts-widget">
+          <div class="widget-header">
+            <h3 class="widget-title"><%= theme.widgets.recent_posts.title %></h3>
+          </div>
+          <div class="widget-content">
+            <ul class="recent-posts-list">
+              <% site.posts.sort('-date').limit(theme.widgets.recent_posts.limit).each(function(post) { %>
+                <li class="recent-post-item">
+                  <a href="<%- url_for(post.path) %>" class="recent-post-link">
+                    <h4 class="recent-post-title"><%= post.title %></h4>
+                    <time class="recent-post-date"><%= date(post.date, theme.misc.date_format) %></time>
+                  </a>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Social Links Widget -->
+        <% if (theme.widgets.social_links.enable) { %>
+        <div class="widget social-widget">
+          <div class="widget-header">
+            <h3 class="widget-title"><%= theme.widgets.social_links.title %></h3>
+          </div>
+          <div class="widget-content">
+            <div class="social-links">
+              <% for (let name in theme.social) { %>
+                <a href="<%= theme.social[name] %>" class="social-link" target="_blank" rel="noopener noreferrer">
+                  <i data-lucide="<%= name.toLowerCase() === 'github' ? 'github' : name.toLowerCase() === 'linkedin' ? 'linkedin' : name.toLowerCase() === 'mail' ? 'mail' : 'external-link' %>" class="social-icon"></i>
+                  <span class="social-text"><%= name %></span>
+                </a>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <% } %>
+        
+      </div>
+    </aside>
+  </div>
+
+  <footer class="doeshing-footer <%= page.path === 'index.html' || page.path === '' ? 'home-page' : '' %>">
+    <div class="footer-container">
+      <!-- Left side content -->
+      <div class="footer-content">
+        <div class="footer-copyright">
+          <span>Copyright <span id="current-year"><%= new Date().getFullYear() %></span> All rights reserved.</span>
+          <span class="separator">|</span>
+        </div>
+        
+        <div class="footer-made-with">
+          <span class="footer-text">
+            Made with <span class="heart">♥</span> by <%= theme.footer.author %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <% if (theme.features.back_to_top) { %>
+  <button id="back-to-top" class="back-to-top-btn" aria-label="Back to top">
+    <i data-lucide="arrow-up" class="back-to-top-icon"></i>
+  </button>
+  <% } %>
+
+  <!-- Search Data -->
+  <script src="<%- url_for('search-data.js') %>"></script>
+  <script src="<%- url_for('js/script.js') %>"></script>
+</body>
+</html>

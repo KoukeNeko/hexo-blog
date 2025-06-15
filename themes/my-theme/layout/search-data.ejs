@@ -1,0 +1,15 @@
+---
+layout: false
+---
+window.searchData = [
+  <% site.posts.each(function(post, index) { %>
+  {
+    "title": "<%= post.title.replace(/"/g, '\\"') %>",
+    "content": "<%- strip_html(post.content).replace(/"/g, '\\"').replace(/\n/g, ' ').substring(0, 500) %>",
+    "url": "<%- url_for(post.path) %>",
+    "date": "<%= date(post.date, 'YYYY-MM-DD') %>",
+    "categories": [<% post.categories.each(function(cat, i) { %>"<%= cat.name %>"<% if (i < post.categories.length - 1) { %>,<% } %><% }) %>],
+    "tags": [<% post.tags.each(function(tag, i) { %>"<%= tag.name %>"<% if (i < post.tags.length - 1) { %>,<% } %><% }) %>]
+  }<% if (index < site.posts.length - 1) { %>,<% } %>
+  <% }) %>
+];

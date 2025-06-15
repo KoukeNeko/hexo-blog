@@ -1,0 +1,132 @@
+# Theme configuration
+name: my-theme
+version: 1.0.0
+description: Twitter-style dark theme for Hexo inspired by doeshing.site
+
+# Profile configuration
+profile:
+  name: 陳德生
+  display_name: 陳德生
+  username: doeshing
+  avatar: https://github.com/KoukeNeko.png
+  bio: CS student at CCU. Passionate about web development and technology.
+  location: Taiwan
+  website: https://doeshing.site
+  
+# Menu configuration
+menu:
+  Home: /
+  Archives: /archives/
+  Projects: /categories/專案/
+  About: /about/
+
+# Social links (will show in footer and right sidebar)
+social:
+  GitHub: https://github.com/KoukeNeko
+  LinkedIn: https://www.linkedin.com/in/doeshing/
+  Mail: mailto:contact@doeshing.ink
+  Blog: https://blog.doeshing.site
+
+# Footer configuration
+footer:
+  copyright: © 2025 doeshing.site
+  author: doeshing
+  show_powered_by: true
+  
+# Sidebar widgets configuration
+widgets:
+  # Profile widget
+  profile:
+    enable: true
+    show_stats: true
+    show_avatar: true
+    
+  # Popular tags widget  
+  tags:
+    enable: true
+    limit: 10
+    title: Popular Tags
+    
+  # Recent posts widget
+  recent_posts:
+    enable: true
+    limit: 5
+    title: Recent Posts
+    
+  # Social links widget
+  social_links:
+    enable: true
+    title: Connect
+
+# Theme customization
+appearance:
+  # Color scheme
+  colors:
+    primary: "#3b82f6"
+    accent: "#8b5cf6"
+    background: "#09090b"
+    surface: "#18181b"
+    text: "#f4f4f5"
+    
+  # Typography
+  fonts:
+    terminal: "VT323"
+    body: "Inter"
+    heading: "Geist"
+    mono: "Geist Mono"
+    
+  # Layout
+  layout:
+    max_width: 1280px
+    sidebar_left_width: 260px
+    sidebar_right_width: 350px
+    main_content_width: 600px
+
+# Features
+features:
+  # Enable/disable components
+  search: true
+  toc: true
+  comments: false
+  dark_mode: true
+  back_to_top: true
+  
+  # Twitter-style interactions
+  twitter_actions: true
+  like_button: true
+  retweet_button: true
+  share_button: true
+  
+  # Effects
+  background_effects: true
+  cursor_effects: true
+  smooth_scroll: true
+  page_transitions: true
+
+# SEO settings
+seo:
+  keywords: "doeshing, blog, portfolio, computer science, web development, CCU"
+  description: "Personal blog and portfolio of 陳德生 (doeshing) - Computer Science student sharing insights on web development and technology."
+  
+# Analytics (optional)
+analytics:
+  google_analytics: ""
+  baidu_analytics: ""
+  
+# Comments system (optional)
+comments:
+  system: "" # disqus, gitalk, valine, etc.
+  
+# Additional settings
+misc:
+  # Posts per page
+  posts_per_page: 10
+  
+  # Excerpt length for timeline
+  excerpt_length: 280
+  
+  # Date format
+  date_format: "MMM DD, YYYY"
+  
+  # Language
+  language: zh-TW

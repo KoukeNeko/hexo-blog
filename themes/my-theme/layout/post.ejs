@@ -1,0 +1,77 @@
+<!-- Single Post Layout -->
+<article class="post-article">
+  <!-- Post Header -->
+  <header class="post-header">
+    <h1 class="post-title"><%= page.title %></h1>
+    <div class="post-meta">
+      <time class="post-date" datetime="<%= page.date.format() %>">
+        <%= date(page.date, 'MMMM DD, YYYY') %>
+      </time>
+      <% if (page.categories && page.categories.length > 0) { %>
+        <span class="post-separator">•</span>
+        <div class="post-categories">
+          <% page.categories.each(function(category) { %>
+            <a href="<%- url_for(category.path) %>" class="post-category">
+              <%= category.name %>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+      <% if (page.tags && page.tags.length > 0) { %>
+        <span class="post-separator">•</span>
+        <div class="post-tags">
+          <% page.tags.each(function(tag) { %>
+            <a href="<%- url_for(tag.path) %>" class="post-tag">
+              #<%= tag.name %>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </header>
+
+  <!-- Post Content -->
+  <div class="post-content">
+    <%- page.content %>
+  </div>
+
+  <!-- Post Footer/Actions -->
+  <% if (theme.features.twitter_actions) { %>
+  <footer class="post-footer">
+    <div class="post-actions">
+      <button class="post-action like-action" aria-label="Like this post">
+        <i data-lucide="heart" class="action-icon"></i>
+        <span class="action-text">Like</span>
+      </button>
+      
+      <% if (theme.features.share_button) { %>
+      <button class="post-action share-action" aria-label="Share this post">
+        <i data-lucide="share" class="action-icon"></i>
+        <span class="action-text">Share</span>
+      </button>
+      <% } %>
+      
+      <button class="post-action bookmark-action" aria-label="Bookmark this post">
+        <i data-lucide="bookmark" class="action-icon"></i>
+        <span class="action-text">Bookmark</span>
+      </button>
+    </div>
+  </footer>
+  <% } %>
+</article>
+
+<!-- Post Navigation -->
+<nav class="post-navigation">
+  <% if (page.prev) { %>
+    <a href="<%- url_for(page.prev.path) %>" class="post-nav-item prev">
+      <div class="post-nav-direction">← Previous</div>
+      <div class="post-nav-title"><%= page.prev.title %></div>
+    </a>
+  <% } %>
+  <% if (page.next) { %>
+    <a href="<%- url_for(page.next.path) %>" class="post-nav-item next">
+      <div class="post-nav-direction">Next →</div>
+      <div class="post-nav-title"><%= page.next.title %></div>
+    </a>
+  <% } %>
+</nav>
