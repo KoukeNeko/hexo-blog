@@ -758,6 +758,38 @@ function initReadingWidgets() {
   initReadingProgress();
   initContextActions();
   calculateReadingStats();
+  setupStickyWidgets();
+}
+
+// Setup sticky positioning for widgets after TOC
+function setupStickyWidgets() {
+  const tocWidget = document.querySelector('.post-page .widget.toc-widget');
+  const infoWidget = document.querySelector('.post-page .widget.info-widget');
+  
+  if (!tocWidget || !infoWidget) return;
+  
+  function updateStickyPositions() {
+    const tocHeight = tocWidget.offsetHeight;
+    const tocTop = 80; // 5rem = 80px
+    const margin = 24; // 1.5rem = 24px
+    
+    // Set info widget to stick right after TOC
+    const infoWidgetTop = tocTop + tocHeight + margin;
+    infoWidget.style.top = `${infoWidgetTop}px`;
+    
+    // Check if info widget would go below viewport
+    const maxTop = window.innerHeight - infoWidget.offsetHeight - 20;
+    if (infoWidgetTop > maxTop) {
+      infoWidget.style.top = `${maxTop}px`;
+    }
+  }
+  
+  // Update positions initially and on window resize
+  updateStickyPositions();
+  window.addEventListener('resize', throttle(updateStickyPositions, 100));
+  
+  // Also update when TOC content changes (after it's generated)
+  setTimeout(updateStickyPositions, 100);
 }
 
 // Generate Table of Contents
@@ -812,23 +844,45 @@ function generateTableOfContents() {
 function updateTOCActiveState() {
   const headings = document.querySelectorAll('.post-content h1, .post-content h2, .post-content h3, .post-content h4');
   const tocLinks = document.querySelectorAll('.toc-nav a');
+  const tocNav = document.querySelector('.toc-nav');
+  
+  if (!headings.length || !tocLinks.length) return;
   
   window.addEventListener('scroll', throttle(() => {
-    const scrollPos = window.scrollY + 100;
+    const scrollPos = window.scrollY + 150; // Offset for header height
     
     let activeHeading = null;
-    headings.forEach(heading => {
+    let currentIndex = -1;
+    
+    // Find the current heading
+    headings.forEach((heading, index) => {
       if (heading.offsetTop <= scrollPos) {
         activeHeading = heading;
+        currentIndex = index;
       }
     });
     
+    // Remove all active states
     tocLinks.forEach(link => link.classList.remove('active'));
     
+    // Add active state to current section
     if (activeHeading) {
       const activeLink = document.querySelector(`.toc-nav a[href="#${activeHeading.id}"]`);
       if (activeLink) {
         activeLink.classList.add('active');
+        
+        // Auto-scroll TOC to keep active item visible
+        if (tocNav) {
+          const linkRect = activeLink.getBoundingClientRect();
+          const navRect = tocNav.getBoundingClientRect();
+          
+          if (linkRect.top < navRect.top || linkRect.bottom > navRect.bottom) {
+            activeLink.scrollIntoView({
+              behavior: 'smooth',
+              block: 'nearest'
+            });
+          }
+        }
       }
     }
   }, 100));

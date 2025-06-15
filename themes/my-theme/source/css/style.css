@@ -487,6 +487,7 @@ body:not(.background-effects) #bg-ball {
   flex-shrink: 0;
   margin: 0 1rem 0 1rem;
   display: none; /* Hidden on mobile by default */
+  height: fit-content; /* Allow sticky children to work properly */
 }
 
 /* Show sidebars on larger screens */
@@ -499,9 +500,8 @@ body:not(.background-effects) #bg-ball {
 
 /* Sidebar Content */
 .sidebar-content {
-  position: sticky;
   height: auto;
-  overflow-y: auto;
+  overflow-y: visible; /* Allow children to use sticky positioning */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE and Edge */
 }
@@ -1224,10 +1224,56 @@ code {
   color: var(--accent);
 }
 
-/* Table of Contents */
+/* Table of Contents - Sticky and Expanded */
+.post-page .widget.toc-widget {
+  position: sticky;
+  top: 5rem; /* Below the fixed header */
+  z-index: 30;
+  margin-bottom: 1.5rem;
+  max-height: calc(100vh - 6rem); /* Ensure it doesn't exceed viewport */
+  overflow: hidden;
+  background: var(--bg-secondary); /* Ensure background for sticky effect */
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* TOC 後面的小工具樣式 */
+.post-page .widget.toc-widget ~ .widget {
+  background: var(--bg-secondary);
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+/* 當 TOC 是 sticky 時，其他小工具也要 sticky */
+.post-page .widget.info-widget {
+  position: sticky;
+  z-index: 29;
+}
+
 .toc-nav {
-  max-height: 200px;
+  max-height: none; /* Remove height restriction to fully expand */
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.toc-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toc-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.toc-nav::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.toc-nav::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .toc-nav ul {
@@ -1250,6 +1296,8 @@ code {
   border-left: 2px solid transparent;
   padding-left: 0.75rem;
   transition: all 0.2s ease;
+  word-wrap: break-word;
+  hyphens: auto;
 }
 
 .toc-nav a:hover,
@@ -1264,6 +1312,17 @@ code {
 .toc-nav .toc-level-2 { padding-left: 1.5rem; }
 .toc-nav .toc-level-3 { padding-left: 2.25rem; }
 .toc-nav .toc-level-4 { padding-left: 3rem; }
+
+/* Add visual indicator for current section */
+.toc-nav a.active {
+  font-weight: 600;
+  transform: translateX(2px);
+}
+
+/* Smooth scroll behavior when clicking TOC links */
+.post-page {
+  scroll-behavior: smooth;
+}
 
 /* Reading Progress */
 .reading-progress {
