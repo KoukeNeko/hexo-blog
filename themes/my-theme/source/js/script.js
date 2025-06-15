@@ -42,6 +42,11 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize back to top if enabled
   initBackToTop();
+  
+  // Initialize reading widgets if on post page
+  if (document.body.classList.contains('post-page')) {
+    initReadingWidgets();
+  }
 });
 
 // Background Ball Effect
@@ -745,6 +750,252 @@ function initTwitterActions() {
       }
     });
   });
+}
+
+// Reading Widgets Functions
+function initReadingWidgets() {
+  generateTableOfContents();
+  initReadingProgress();
+  initContextActions();
+  calculateReadingStats();
+}
+
+// Generate Table of Contents
+function generateTableOfContents() {
+  const tocContainer = document.getElementById('table-of-contents');
+  if (!tocContainer) return;
+  
+  const headings = document.querySelectorAll('.post-content h1, .post-content h2, .post-content h3, .post-content h4');
+  if (headings.length === 0) {
+    tocContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">此文章沒有標題</p>';
+    return;
+  }
+  
+  const tocList = document.createElement('ul');
+  
+  headings.forEach((heading, index) => {
+    const level = parseInt(heading.tagName.substring(1));
+    const id = heading.id || `heading-${index}`;
+    
+    if (!heading.id) {
+      heading.id = id;
+    }
+    
+    const listItem = document.createElement('li');
+    const link = document.createElement('a');
+    link.href = `#${id}`;
+    link.textContent = heading.textContent;
+    link.className = `toc-level-${level}`;
+    
+    listItem.appendChild(link);
+    tocList.appendChild(listItem);
+    
+    // Add click handler for smooth scroll
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(id);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Update active state
+        document.querySelectorAll('.toc-nav a').forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      }
+    });
+  });
+  
+  tocContainer.appendChild(tocList);
+  updateTOCActiveState();
+}
+
+// Update TOC active state based on scroll position
+function updateTOCActiveState() {
+  const headings = document.querySelectorAll('.post-content h1, .post-content h2, .post-content h3, .post-content h4');
+  const tocLinks = document.querySelectorAll('.toc-nav a');
+  
+  window.addEventListener('scroll', throttle(() => {
+    const scrollPos = window.scrollY + 100;
+    
+    let activeHeading = null;
+    headings.forEach(heading => {
+      if (heading.offsetTop <= scrollPos) {
+        activeHeading = heading;
+      }
+    });
+    
+    tocLinks.forEach(link => link.classList.remove('active'));
+    
+    if (activeHeading) {
+      const activeLink = document.querySelector(`.toc-nav a[href="#${activeHeading.id}"]`);
+      if (activeLink) {
+        activeLink.classList.add('active');
+      }
+    }
+  }, 100));
+}
+
+// Reading Progress
+function initReadingProgress() {
+  const progressBar = document.getElementById('reading-progress-bar');
+  
+  if (!progressBar) return;
+  
+  window.addEventListener('scroll', throttle(() => {
+    const article = document.querySelector('.post-content');
+    if (!article) return;
+    
+    const articleTop = article.offsetTop;
+    const articleHeight = article.offsetHeight;
+    const windowHeight = window.innerHeight;
+    const scrollTop = window.scrollY;
+    
+    // Accurate progress calculation considering page scroll limits
+    const articleBottom = articleTop + articleHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    const maxScrollTop = documentHeight - windowHeight;
+    
+    // Debug information
+    console.log('=== Reading Progress Debug ===');
+    console.log('scrollTop:', scrollTop);
+    console.log('windowHeight:', windowHeight);
+    console.log('articleTop:', articleTop);
+    console.log('articleHeight:', articleHeight);
+    console.log('articleBottom:', articleBottom);
+    console.log('documentHeight:', documentHeight);
+    console.log('maxScrollTop:', maxScrollTop);
+    console.log('isAtBottom:', scrollTop >= maxScrollTop - 10);
+    
+    let progress = 0;
+    
+    // If we've reached the bottom of the page, always show 100%
+    if (scrollTop >= maxScrollTop - 10) {
+      progress = 100;
+    } else if (scrollTop < articleTop) {
+      // Before the article starts
+      progress = 0;
+    } else {
+      // Calculate progress based on article reading
+      // But consider the reading area (from article start to when article bottom is at viewport center)
+      const readingEndPoint = Math.min(articleBottom - windowHeight/2, maxScrollTop);
+      const readingDistance = readingEndPoint - articleTop;
+      
+      if (readingDistance <= 0) {
+        // Very short article
+        progress = 100;
+      } else {
+        const scrolledIntoReading = scrollTop - articleTop;
+        progress = (scrolledIntoReading / readingDistance) * 100;
+      }
+    }
+    
+    progress = Math.max(0, Math.min(100, progress));
+    
+    console.log('readingEndPoint:', Math.min(articleBottom - windowHeight/2, maxScrollTop));
+    console.log('calculated progress:', progress);
+    console.log('=========================');
+    
+    progressBar.style.width = `${progress}%`;
+  }, 50));
+}
+
+// Context Actions
+function initContextActions() {
+  // Scroll to top
+  const scrollToTopBtn = document.getElementById('scroll-to-top');
+  if (scrollToTopBtn) {
+    scrollToTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+  
+  // Share article
+  const shareBtn = document.getElementById('share-article');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({
+          title: document.title,
+          url: window.location.href
+        });
+      } else {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          const originalText = shareBtn.querySelector('.action-text').textContent;
+          shareBtn.querySelector('.action-text').textContent = '已複製!';
+          setTimeout(() => {
+            shareBtn.querySelector('.action-text').textContent = originalText;
+          }, 2000);
+        });
+      }
+    });
+  }
+  
+  // Bookmark article
+  const bookmarkBtn = document.getElementById('bookmark-article');
+  if (bookmarkBtn) {
+    bookmarkBtn.addEventListener('click', () => {
+      const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+      const article = {
+        title: document.title,
+        url: window.location.href,
+        date: new Date().toISOString()
+      };
+      
+      const existingIndex = bookmarks.findIndex(b => b.url === article.url);
+      if (existingIndex >= 0) {
+        bookmarks.splice(existingIndex, 1);
+        bookmarkBtn.querySelector('.action-text').textContent = '收藏';
+      } else {
+        bookmarks.push(article);
+        bookmarkBtn.querySelector('.action-text').textContent = '已收藏';
+      }
+      
+      localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    });
+    
+    const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+    if (bookmarks.some(b => b.url === window.location.href)) {
+      bookmarkBtn.querySelector('.action-text').textContent = '已收藏';
+    }
+  }
+  
+  // Print article
+  const printBtn = document.getElementById('print-article');
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
+  
+  // Reading mode toggle
+  const readingModeBtn = document.getElementById('toggle-reading-mode');
+  if (readingModeBtn) {
+    readingModeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('reading-mode');
+      const isReading = document.body.classList.contains('reading-mode');
+      readingModeBtn.querySelector('.action-text').textContent = isReading ? '退出專注' : '專注模式';
+    });
+  }
+}
+
+// Calculate Reading Stats
+function calculateReadingStats() {
+  const content = document.querySelector('.post-content');
+  if (!content) return;
+  
+  const text = content.textContent || content.innerText;
+  const wordCount = text.length;
+  const readingTime = Math.ceil(wordCount / 300);
+  
+  const wordCountElement = document.getElementById('word-count');
+  const readingTimeElement = document.getElementById('reading-time');
+  
+  if (wordCountElement) {
+    wordCountElement.textContent = `${wordCount.toLocaleString()} 字`;
+  }
+  
+  if (readingTimeElement) {
+    readingTimeElement.textContent = `約 ${readingTime} 分鐘`;
+  }
 }
 
 // Sidebar Navigation
