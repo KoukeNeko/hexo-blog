@@ -259,15 +259,24 @@ function initSocialLinks() {
   });
 }
 
-// Header Search functionality
+// Search functionality
 function initSearch() {
-  const headerSearchInput = document.querySelector('#header-search');
-  const searchResults = document.querySelector('#search-results');
+  const searchToggle = document.getElementById('search-toggle');
+  const mobileSearchToggle = document.getElementById('mobile-search-toggle');
+  const searchOverlay = document.getElementById('search-overlay');
+  const searchInput = document.getElementById('search-input');
+  const searchClose = document.getElementById('search-close');
+  const searchResults = document.getElementById('search-results');
   const oldSearchInput = document.querySelector('#search');
   
-  // Initialize header search
-  if (headerSearchInput && searchResults) {
-    initHeaderSearch(headerSearchInput, searchResults);
+  // Initialize overlay search for both desktop and mobile buttons
+  if (searchOverlay && searchInput && searchResults) {
+    if (searchToggle) {
+      initOverlaySearch(searchToggle, searchOverlay, searchInput, searchClose, searchResults);
+    }
+    if (mobileSearchToggle) {
+      initOverlaySearch(mobileSearchToggle, searchOverlay, searchInput, searchClose, searchResults);
+    }
   }
   
   // Legacy search functionality for page-specific search
@@ -276,19 +285,69 @@ function initSearch() {
   }
 }
 
-function initHeaderSearch(searchInput, searchResults) {
+function initOverlaySearch(searchToggle, searchOverlay, searchInput, searchClose, searchResults) {
   let searchTimeout;
-  
-  // Sample posts data - in a real implementation, this would come from your site data
   const posts = getAllPosts();
   
+  // Open search overlay
+  searchToggle.addEventListener('click', () => {
+    searchOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    // Focus on input after overlay animation
+    setTimeout(() => {
+      searchInput.focus();
+    }, 150);
+  });
+  
+  // Close search overlay
+  function closeSearch() {
+    searchOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+    searchInput.value = '';
+    searchResults.innerHTML = `
+      <div class="search-placeholder">
+        <i data-lucide="search" class="placeholder-icon"></i>
+        <p>開始輸入以搜尋文章...</p>
+      </div>
+    `;
+    // Recreate icons
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  }
+  
+  searchClose.addEventListener('click', closeSearch);
+  
+  // Close on overlay background click
+  searchOverlay.addEventListener('click', (e) => {
+    if (e.target === searchOverlay) {
+      closeSearch();
+    }
+  });
+  
+  // Close on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && searchOverlay.classList.contains('active')) {
+      closeSearch();
+    }
+  });
+  
+  // Search input functionality
   searchInput.addEventListener('input', function() {
     const query = this.value.toLowerCase().trim();
     
     clearTimeout(searchTimeout);
     
     if (query === '') {
-      searchResults.classList.remove('visible');
+      searchResults.innerHTML = `
+        <div class="search-placeholder">
+          <i data-lucide="search" class="placeholder-icon"></i>
+          <p>開始輸入以搜尋文章...</p>
+        </div>
+      `;
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
       return;
     }
     
@@ -306,22 +365,8 @@ function initHeaderSearch(searchInput, searchResults) {
         return titleMatch || contentMatch || categoryMatch || tagMatch;
       });
       
-      displaySearchResults(results, searchResults, query);
+      displayOverlaySearchResults(results, searchResults, query);
     }, 300);
-  });
-  
-  // Hide results when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-      searchResults.classList.remove('visible');
-    }
-  });
-  
-  // Show results when focusing on search input
-  searchInput.addEventListener('focus', function() {
-    if (this.value.trim() !== '' && searchResults.children.length > 0) {
-      searchResults.classList.add('visible');
-    }
   });
 }
 
@@ -353,18 +398,22 @@ function getAllPosts() {
   return posts;
 }
 
-function displaySearchResults(results, searchResults, query) {
+function displayOverlaySearchResults(results, searchResults, query) {
   searchResults.innerHTML = '';
   
   if (results.length === 0) {
     searchResults.innerHTML = `
-      <div class="search-result-item">
-        <div class="search-result-title">沒有找到相關文章</div>
-        <div class="search-result-excerpt">請嘗試其他關鍵字</div>
+      <div class="search-no-results">
+        <i data-lucide="search-x" class="no-results-icon"></i>
+        <h3>沒有找到相關文章</h3>
+        <p>請嘗試其他關鍵字</p>
       </div>
     `;
   } else {
-    results.slice(0, 5).forEach(post => {
+    const resultsContainer = document.createElement('div');
+    resultsContainer.className = 'search-results-list';
+    
+    results.slice(0, 8).forEach(post => {
       const item = document.createElement('div');
       item.className = 'search-result-item';
       
@@ -383,9 +432,14 @@ function displaySearchResults(results, searchResults, query) {
       }
       
       item.innerHTML = `
-        <div class="search-result-title">${highlightText(post.title, query)}</div>
-        <div class="search-result-excerpt">${highlightText(truncateText(post.content, 100), query)}</div>
-        ${metaInfo ? `<div class="search-result-meta">${metaInfo}</div>` : ''}
+        <div class="search-result-content">
+          <div class="search-result-title">${highlightText(post.title, query)}</div>
+          <div class="search-result-excerpt">${highlightText(truncateText(post.content, 120), query)}</div>
+          ${metaInfo ? `<div class="search-result-meta">${metaInfo}</div>` : ''}
+        </div>
+        <div class="search-result-icon">
+          <i data-lucide="arrow-right"></i>
+        </div>
       `;
       
       item.addEventListener('click', () => {
@@ -395,11 +449,24 @@ function displaySearchResults(results, searchResults, query) {
         window.location.href = url;
       });
       
-      searchResults.appendChild(item);
+      resultsContainer.appendChild(item);
     });
+    
+    // Add results count
+    const resultsHeader = document.createElement('div');
+    resultsHeader.className = 'search-results-header';
+    resultsHeader.innerHTML = `
+      <p>找到 <strong>${results.length}</strong> 篇文章${results.length > 8 ? `，顯示前 8 篇` : ''}</p>
+    `;
+    
+    searchResults.appendChild(resultsHeader);
+    searchResults.appendChild(resultsContainer);
   }
   
-  searchResults.classList.add('visible');
+  // Recreate icons
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
 }
 
 function highlightText(text, query) {
@@ -628,8 +695,17 @@ function initMobileMenu() {
   const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
   mobileNavItems.forEach(item => {
     item.addEventListener('click', () => {
-      mobileMenu.classList.remove('active');
-      mobileToggle.setAttribute('aria-expanded', 'false');
+      // Don't close menu immediately for search button, let the search overlay handle it
+      if (!item.classList.contains('search-mobile-button')) {
+        mobileMenu.classList.remove('active');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+      } else {
+        // Close menu after a short delay to allow search overlay to open
+        setTimeout(() => {
+          mobileMenu.classList.remove('active');
+          mobileToggle.setAttribute('aria-expanded', 'false');
+        }, 100);
+      }
     });
   });
 }

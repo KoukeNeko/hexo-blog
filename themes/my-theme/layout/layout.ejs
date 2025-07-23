@@ -29,15 +29,6 @@
         <span class="cursor-blink">▌</span>
       </a>
 
-      <!-- Search Bar -->
-      <div class="header-search">
-        <div class="search-container">
-          <input type="text" id="header-search" class="search-input" placeholder="搜尋文章..." autocomplete="off">
-          <i data-lucide="search" class="search-icon"></i>
-          <div id="search-results" class="search-results"></div>
-        </div>
-      </div>
-
       <!-- Desktop Navigation -->
       <nav class="desktop-nav">
         <a href="https://blog.doeshing.site" target="_blank" rel="noopener noreferrer" class="nav-button">
@@ -52,6 +43,10 @@
           <i data-lucide="signature" class="nav-icon"></i>
           關於
         </a>
+        <button class="nav-button search-nav-button" id="search-toggle" aria-label="開啟搜尋">
+          <i data-lucide="search" class="nav-icon"></i>
+          搜尋
+        </button>
       </nav>
 
       <!-- Mobile Menu Toggle -->
@@ -62,6 +57,10 @@
       <!-- Mobile Menu -->
       <div class="mobile-menu">
         <div class="mobile-menu-content">
+          <button class="mobile-nav-item search-mobile-button" id="mobile-search-toggle" aria-label="開啟搜尋">
+            <i data-lucide="search" class="nav-icon"></i>
+            搜尋
+          </button>
           <a href="https://blog.doeshing.site" target="_blank" rel="noopener noreferrer" class="mobile-nav-item">
             <i data-lucide="receipt-text" class="nav-icon"></i>
             部落格
@@ -316,6 +315,29 @@
     </div>
   </div>
   <% } %>
+
+  <!-- Search Overlay Modal -->
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-overlay-content">
+      <div class="search-overlay-header">
+        <div class="search-container">
+          <i data-lucide="search" class="search-icon"></i>
+          <input type="text" id="search-input" class="search-input" placeholder="搜尋文章..." autocomplete="off" autofocus>
+          <button class="search-close-btn" id="search-close" aria-label="關閉搜尋">
+            <i data-lucide="x" class="close-icon"></i>
+          </button>
+        </div>
+      </div>
+      <div class="search-overlay-body">
+        <div id="search-results" class="search-results">
+          <div class="search-placeholder">
+            <i data-lucide="search" class="placeholder-icon"></i>
+            <p>開始輸入以搜尋文章...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <footer class="doeshing-footer <%= page.path === 'index.html' || page.path === '' ? 'home-page' : '' %>">
     <div class="footer-container">
